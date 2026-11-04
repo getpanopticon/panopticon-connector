@@ -1,10 +1,10 @@
 ## ℹ️ What is this?
 
-This is the connector component for [Akeeba Panopticon](https://github.com/akeeba/panopticon), our self-hosted site monitoring software. You need to install it on your site to be able to monitor it with Akeeba Panopticon.
+This is the connector component for [Akeeba Panopticon](https://github.com/getpanopticon/panopticon), our self-hosted site monitoring software. You need to install it on your site to be able to monitor it with Akeeba Panopticon.
 
-ℹ️ If you have a Joomla! 3 site please [look at the Joomla 3 connector's repository](https://github.com/akeeba/panopticon_connector_j3/releases/latest) instead.
+ℹ️ If you have a Joomla! 3 site please [look at the Joomla 3 connector's repository](https://github.com/getpanopticon/panopticon_connector_j3/releases/latest) instead.
 
-ℹ️ If you have a WordPress site please [look at the WordPress connector's repository](https://github.com/akeeba/panopticon-connector-wordpress/releases/latest) instead.
+ℹ️ If you have a WordPress site please [look at the WordPress connector's repository](https://github.com/getpanopticon/panopticon-connector-wordpress/releases/latest) instead.
 
 ## 🔎 Release highlights
 

@@ -2,7 +2,7 @@
 	"name": "akeeba/panopticon-connector",
 	"type": "project",
 	"description": "Akeeba Panopticon Connector — Joomla connector application for Akeeba Panopticon",
-	"homepage": "https://github.com/akeeba/panopticon-connector",
+	"homepage": "https://github.com/getpanopticon/panopticon-connector",
 	"license": "GPL-3.0+",
 	"authors": [
 		{

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Akeeba Panopticon Connector is a **Joomla 4/5 component** (PHP) that exposes REST API endpoints for [Akeeba Panopticon](https://github.com/akeeba/panopticon), a self-hosted site monitoring tool. It allows Panopticon to remotely monitor updates, install extensions, verify core file checksums, and interact with Akeeba Backup and Admin Tools on connected Joomla sites.
+Akeeba Panopticon Connector is a **Joomla 4/5 component** (PHP) that exposes REST API endpoints for [Akeeba Panopticon](https://github.com/getpanopticon/panopticon), a self-hosted site monitoring tool. It allows Panopticon to remotely monitor updates, install extensions, verify core file checksums, and interact with Akeeba Backup and Admin Tools on connected Joomla sites.
 
 **License:** AGPL-3.0+
 
