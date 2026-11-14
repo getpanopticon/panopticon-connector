@@ -162,10 +162,8 @@ class BackupModel extends BaseModel
 	{
 		$options = [
 			'defaultgroup' => $group,
-			// Joomla 3: the administrator (client 1) caches in administrator/cache, the site (client 0) in the
-			// configured cache_path or cache/. Same mapping as Joomla 3's own BaseDatabaseModel::cleanCache().
-			'cachebase'    => ($client_id) ? JPATH_ADMINISTRATOR . '/cache'
-				: self::getAppConfigParam($app, 'cache_path', JPATH_SITE . '/cache'),
+			'cachebase'    => ($client_id) ? self::getAppConfigParam($app, 'cache_path', JPATH_SITE . '/cache')
+				: JPATH_ADMINISTRATOR . '/cache',
 			'result'       => true,
 		];
 
@@ -185,12 +183,20 @@ class BackupModel extends BaseModel
 
 	private static function clearCacheGroupJoomla4(string $group, int $client_id, object $app): array
 	{
-		/**
-		 * The cache base is the same whichever client is asked for. Since Joomla 4.0 every application — site,
-		 * administrator, API and CLI — defines JPATH_CACHE as administrator/cache, and the cache_path in
-		 * configuration.php, when set, is shared by all of them. Only Joomla 3's site used its own cache/ folder.
-		 */
+		// Get the default cache folder. Start by using the JPATH_CACHE constant.
 		$cacheBaseDefault = JPATH_CACHE;
+		$appClientId      = 0;
+
+		if (method_exists($app, 'getClientId'))
+		{
+			$appClientId = $app->getClientId();
+		}
+
+		// -- If we are asked to clean cache on the other side of the application we need to find a new cache base
+		if ($client_id != $appClientId)
+		{
+			$cacheBaseDefault = (($client_id) ? JPATH_SITE : JPATH_ADMINISTRATOR) . '/cache';
+		}
 
 		// Get the cache controller's options
 		$options = [
