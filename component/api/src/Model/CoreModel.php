@@ -9,8 +9,6 @@ namespace Akeeba\Component\Panopticon\Api\Model;
 
 defined('_JEXEC') || die;
 
-use Akeeba\Component\Panopticon\Api\Library\ChunkedDownloadFile;
-use Akeeba\Component\Panopticon\Api\Library\PackageChecksum;
 use Akeeba\Component\Panopticon\Api\Library\ServerInfo;
 use Akeeba\Component\Panopticon\Api\Library\VersionStability;
 use Akeeba\Component\Panopticon\Api\Mixin\HttpResponseCompatibilityTrait;
@@ -570,7 +568,7 @@ ENDDATA;
 
 	/**
 	 * @return array{basename:string|false, url:string|null, size:int, offset:int, chunk_index:int, done:bool, error:
-	 *                                      string|null, check?:bool}
+	 *                                      string|null}
 	 * @throws Exception
 	 * @since  1.0.0
 	 */
@@ -671,11 +669,47 @@ ENDDATA;
 		// Open the output file.
 		$tempDir = Factory::getApplication()->get('tmp_path');
 		$outFile = $tempDir . '/' . $basename;
-		$fp      = null;
 
 		try
 		{
-			$fp = ChunkedDownloadFile::openForResume($outFile, $offset);
+			if ($offset > 0)
+			{
+				clearstatcache(false, $outFile);
+
+				if (!file_exists($outFile))
+				{
+					throw new RuntimeException(
+						sprintf(
+							'The Joomla update package file %s went away',
+							basename($outFile)
+						)
+					);
+				}
+
+				$filesize = @filesize($outFile) ?: 0;
+
+				if ($filesize < $offset)
+				{
+					throw new RuntimeException(
+						sprintf(
+							'The Joomla update package file %s is smaller than expected (expected: %d bytes; current: %d bytes)',
+							basename($outFile), $offset, $filesize
+						)
+					);
+				}
+			}
+
+			$fp = @fopen($outFile, 'ab');
+
+			if ($fp === false)
+			{
+				throw new RuntimeException('Cannot open output file for writing.');
+			}
+
+			// If there's an offset make sure the file size isn't beyond that offset and get ready to append data.
+			@ftruncate($fp, max($offset, 0));
+			@fseek($fp, max($offset, 0));
+
 		}
 		catch (Exception $e)
 		{
@@ -851,55 +885,12 @@ ENDDATA;
 
 		@fclose($fp);
 
-		// A finished download is checked against the size and hashes advertised by the update source.
-		if ($result['done'] && $result['error'] === null)
-		{
-			$result['check'] = $this->isChunkedDownloadValid($outFile, (int) $size);
-		}
-
 		if (self::DEBUG_CHUNKED_DOWNLOAD)
 		{
 			$result['debug'] = $debug;
 		}
 
 		return $result;
-	}
-
-	/**
-	 * Checks a completed chunked download against the expected size and the update source's hashes.
-	 *
-	 * @param   string  $file          The downloaded package.
-	 * @param   int     $expectedSize  The size reported by the server.
-	 *
-	 * @return  bool
-	 * @since   1.2.0
-	 */
-	private function isChunkedDownloadValid(string $file, int $expectedSize): bool
-	{
-		$hashes = [];
-
-		try
-		{
-			$updateInfo = $this->getUpdateInformation();
-			$object     = is_array($updateInfo) ? ($updateInfo['object'] ?? null) : null;
-
-			if (is_object($object) && method_exists($object, 'get'))
-			{
-				foreach (PackageChecksum::ALGORITHMS as $algo)
-				{
-					if ($object->get($algo, false))
-					{
-						$hashes[$algo] = (string) ($object->$algo->_data ?? '');
-					}
-				}
-			}
-		}
-		catch (Throwable $e)
-		{
-			// No update information: we can only check the size.
-		}
-
-		return PackageChecksum::verify($file, $expectedSize, $hashes);
 	}
 
 	private function getURLForChunkedDownloads(): ?string
