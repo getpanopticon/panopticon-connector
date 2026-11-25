@@ -9,8 +9,7 @@
 # Functions provided:
 #   log/ok/warn/die              - pretty logging
 #   version_lt A B                - dotted-numeric version comparison
-#   find_inbox_package PREFIX      - highest cached inbox/Joomla_<prefix>*.zip
-#   acquire_joomla WANT             - inbox-first, else download; sets
+#   acquire_joomla WANT             - buildfiles' joomla_try_acquire; sets
 #                                     JOOMLA_ZIP and JOOMLA_RESOLVED
 #   extract_joomla                  - unzip the acquired package into www/
 #   install_joomla                  - run the Joomla CLI installer inside the
@@ -35,47 +34,22 @@ version_lt() {
 	[ "$(printf '%s\n%s\n' "$1" "$2" | sort -V | head -1)" = "$1" ]
 }
 
-# Find the highest-versioned Joomla full package already sitting in inbox/ that
-# matches the requested (possibly partial) version prefix.
-find_inbox_package() {
-	local prefix="$1" best="" bestver="" f ver
-	shopt -s nullglob
-	for f in "${INBOX_DIR}"/Joomla_"${prefix}"*Full_Package.zip; do
-		[ -f "${f}" ] || continue
-		ver="$(basename "${f}" | sed -E 's/^Joomla_([0-9]+\.[0-9]+\.[0-9]+).*/\1/')"
-		if [ -z "${bestver}" ] || [ "$(printf '%s\n%s\n' "${bestver}" "${ver}" | sort -V | tail -1)" = "${ver}" ]; then
-			best="${f}"; bestver="${ver}"
-		fi
-	done
-	shopt -u nullglob
-	[ -n "${best}" ] && { echo "${best}"; return 0; }
-	return 1
-}
-
 JOOMLA_ZIP=""
 JOOMLA_RESOLVED=""
 
-# Acquire a Joomla package for the given (possibly partial) version: reuse a
-# cached inbox/ package if present, otherwise resolve + download. Sets
+# Acquire a Joomla package for the given (possibly partial) version: look up the
+# release, then download it unless inbox/ already has it. Sets
 # JOOMLA_ZIP and JOOMLA_RESOLVED. Returns non-zero (without dying) if the
 # requested major has no resolvable stable release, so callers can skip it.
 acquire_joomla() {
 	local want="$1"
 	log "Acquiring Joomla ${want}"
 
-	if JOOMLA_ZIP="$(find_inbox_package "${want}")"; then
-		JOOMLA_RESOLVED="$(basename "${JOOMLA_ZIP}" | sed -E 's/^Joomla_([0-9]+\.[0-9]+\.[0-9]+).*/\1/')"
-		ok "Using inbox package $(basename "${JOOMLA_ZIP}")"
-		return 0
-	fi
-
-	local getcms="${REPO_ROOT}/../buildfiles/getcms/getcms.php"
-	[ -f "${getcms}" ] || die "${getcms} not found. Check out akeeba/buildfiles next to this repository and run composer install there."
-	mkdir -p "${INBOX_DIR}"
-	php "${getcms}" download "${want}" "${INBOX_DIR}" --no-unzip || return 1
-	JOOMLA_ZIP="$(find_inbox_package "${want}")" || return 1
-	JOOMLA_RESOLVED="$(basename "${JOOMLA_ZIP}" | sed -E 's/^Joomla_([0-9]+\.[0-9]+\.[0-9]+).*/\1/')"
-	ok "Downloaded $(basename "${JOOMLA_ZIP}") to inbox/"
+	local library="${REPO_ROOT}/../buildfiles/docker/e2e/joomla/acquire.sh"
+	[ -f "${library}" ] || die "${library} not found. Update the akeeba/buildfiles checkout next to this repository."
+	# shellcheck source=/dev/null
+	. "${library}"
+	joomla_try_acquire "${want}" "${INBOX_DIR}" || { warn "${JOOMLA_ACQUIRE_ERROR}"; return 1; }
 }
 
 extract_joomla() {

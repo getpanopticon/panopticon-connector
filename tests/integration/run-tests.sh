@@ -290,6 +290,12 @@ else
 	teardown_stack
 fi
 
+# A skipped version has not passed: when none could be tested at all, neither has the run.
+case " ${SUMMARY_RESULT[*]-} " in
+	*" PASS "*|*" FAIL "*) ;;
+	*) warn "Nothing was tested"; OVERALL_STATUS=1;;
+esac
+
 echo
 log "Summary"
 i=0
