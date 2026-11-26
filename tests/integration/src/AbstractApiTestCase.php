@@ -60,10 +60,14 @@ abstract class AbstractApiTestCase extends TestCase
 	 *                                from the environment. Pass null or '' to send NO
 	 *                                Authorization header (unauthenticated request); pass any
 	 *                                other string (e.g. a garbage value) to send it verbatim.
+	 * @param   bool         $asForm  Send $body form-encoded (as Panopticon does for POST parameters read from
+	 *                                the request's POST input) instead of as JSON.
 	 *
 	 * @return  array{status:int,headers:string,json:?array,raw:string}
 	 */
-	protected function api(string $method, string $path, ?array $body = null, ?string $token = self::SELF_TOKEN): array
+	protected function api(
+		string $method, string $path, ?array $body = null, ?string $token = self::SELF_TOKEN, bool $asForm = false
+	): array
 	{
 		if ($token === self::SELF_TOKEN)
 		{
@@ -74,7 +78,7 @@ abstract class AbstractApiTestCase extends TestCase
 
 		$headers = [
 			'Accept: application/vnd.api+json',
-			'Content-Type: application/json',
+			$asForm ? 'Content-Type: application/x-www-form-urlencoded' : 'Content-Type: application/json',
 			'User-Agent: panopticon/test',
 		];
 
@@ -95,7 +99,7 @@ abstract class AbstractApiTestCase extends TestCase
 
 		if ($body !== null)
 		{
-			$options[CURLOPT_POSTFIELDS] = json_encode($body);
+			$options[CURLOPT_POSTFIELDS] = $asForm ? http_build_query($body) : json_encode($body);
 		}
 
 		curl_setopt_array($ch, $options);
