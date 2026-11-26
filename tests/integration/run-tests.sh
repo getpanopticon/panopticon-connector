@@ -269,6 +269,8 @@ for pair in "${MAJORS[@]}"; do
 	build_connector
 	install_connector
 	provision_token
+	# On a Linux Docker host the bind-mounted web root is not writable by Apache's user (Docker Desktop hides this).
+	DC exec -T web chmod -R a+rwX /var/www/html
 
 	MAJOR_STATUS=0
 	run_phpunit || MAJOR_STATUS=1
