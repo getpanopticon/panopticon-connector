@@ -12,8 +12,8 @@ use Akeeba\Panopticon\Tests\Integration\AbstractApiTestCase;
 /**
  * Chunked core update download, resumed over several requests (issue #32).
  *
- * The "update server" is a static fixture file served by the test stack's own Apache, which supports Range requests
- * like a real download server. No Joomla update is involved: the endpoint is told the URL to download.
+ * The "update server" is a static fixture file served by the test stack's own Apache, which supports HEAD and Range
+ * requests like a real download server. No Joomla update is involved: the endpoint is told the URL to download.
  *
  * The file is deliberately larger than the first chunk, so the download needs more than one request, and its size is
  * odd and its content non-repetitive: a dropped or duplicated byte at a chunk boundary changes the hash.
@@ -41,6 +41,26 @@ class ChunkedDownloadTest extends AbstractApiTestCase
 
 	public function testChunkedDownloadResumedOverSeveralRequestsIsByteIdentical(): void
 	{
+		// Sending the size skips the HEAD size probe: this test is about resuming the download.
+		$this->assertChunkedDownloadIsByteIdentical(['size' => self::FIXTURE_SIZE]);
+	}
+
+	/**
+	 * Without a size the connector finds it with a HEAD request. The test stack's Apache speaks HTTP/1.1 and sends
+	 * capitalised header names, which must be understood just like HTTP/2's lowercase ones.
+	 */
+	public function testChunkedDownloadWithoutSizeProbesItFromTheServer(): void
+	{
+		$this->assertChunkedDownloadIsByteIdentical([]);
+	}
+
+	/**
+	 * Downloads a fixture file through the API, one request at a time, and checks the result.
+	 *
+	 * @param   array  $extraPost  POST parameters to send with the first request, besides the URL.
+	 */
+	private function assertChunkedDownloadIsByteIdentical(array $extraPost): void
+	{
 		$webRoot = rtrim(getenv('PANOPTICON_WEB_ROOT') ?: '/var/www/html', '/');
 
 		if (!is_dir($webRoot) || !is_writable($webRoot))
@@ -59,8 +79,7 @@ class ChunkedDownloadTest extends AbstractApiTestCase
 		$parts = parse_url(self::$baseUrl);
 		$url   = sprintf('%s://%s%s/%s', $parts['scheme'], $parts['host'], isset($parts['port']) ? ':' . $parts['port'] : '', $basename);
 
-		// Sending the size skips the HEAD size probe: this test is about resuming the download.
-		$post     = ['url' => $url, 'size' => self::FIXTURE_SIZE];
+		$post     = ['url' => $url] + $extraPost;
 		$requests = 0;
 		$done     = false;
 

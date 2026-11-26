@@ -608,7 +608,8 @@ ENDDATA;
 							return -1;
 						}
 
-						$headers = $response->getHeaders();
+						// Header names are case-insensitive, and Joomla keeps the server's capitalisation (HTTP/2 is lowercase).
+						$headers = array_change_key_case($response->getHeaders(), CASE_LOWER);
 
 						$contentType   = $headers['content-type'] ?? [];
 						$contentType   = is_array($contentType) ? $contentType : [$contentType];

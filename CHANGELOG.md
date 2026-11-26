@@ -4,6 +4,7 @@
 - Removed size and checksum verification after chunked Joomla update downloads
 ~ Changed cache-directory selection when clearing Joomla caches
 * 🐞 Core updates downloaded in several requests produced a package one byte short, failing extraction [#32]
+* 🐞 Chunked core update downloads reported no file to download with some HTTP/1.1 update servers
 
 # Akeeba Panopticon Connector for Joomla 4.x, 5.x, and 6.x version 1.2.0
 
