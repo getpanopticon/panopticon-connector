@@ -10,7 +10,6 @@ namespace Akeeba\Component\Panopticon\Api\Controller;
 defined('_JEXEC') || die;
 
 use Akeeba\Component\Panopticon\Api\Mixin\J6FixBrokenModelStateTrait;
-use Joomla\CMS\Access\Exception\NotAllowed;
 use Joomla\CMS\Application\CMSApplication;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Installer\Installer;
@@ -60,14 +59,6 @@ class UpdatesController extends ApiController
 
 	public function update()
 	{
-		// Make sure the user has administrator privileges on com_installer
-		$user = $this->app->getIdentity();
-
-		if (!$user->authorise('core.manage', 'com_installer'))
-		{
-			throw new NotAllowed($this->app->getLanguage()->_('JERROR_ALERTNOAUTHOR'), 403);
-		}
-
 		// Load com_installer language
 		$this->app->getLanguage()
 			->load('com_installer', JPATH_ADMINISTRATOR);

@@ -45,18 +45,12 @@ If any of these plugins are disabled, _or if its Access is set to anything other
 
 ## 📋 CHANGELOG
 
-* ✨ Add machine translations for `de-DE`, `el-GR`, `es-ES`, `fr-FR`, `it-IT`, and `pt-PT`
-* ✨ Support a custom base URL for the Core File Integrity checksums source
-* ✨ Support for PHP 8.6 and Joomla! 6.2
-* ✏️ Installation is now refused on PHP and Joomla! versions outside the supported range
-* 🐞 Package downloads failed on Joomla! 5.4 and later, including Joomla! 6, reporting a misleading “HTTP 400” error [#28]
-* 🐞 Core updates fail with HTTP 500 on Joomla 5.1–5.2 due to removed `File::exists()` method [#26]
-* 🐞 System information reported the CPU load averages incorrectly (empty 5-minute value, wrong 15-minute value)
-* 🐞 System information never reported Linux CPU usage from `/proc/stat`
-* 🐞 Editing an update site through the API failed with HTTP 500
-* 🐞 Remote extension installation from a URL failed with HTTP 500 on PHP 8+ (non-static call to `HttpFactory::getHttp()`) [#27]
-* 🐞 Enabling the “Web Services - Akeeba Backup” plugin wrote to the wrong column
-* 🐞 Akeeba Backup Secret Word provision failure made the whole Akeeba Backup information request fail
+* ✨ Component permissions: Super Users can now hide the connector from other user groups
+* ✂️ Removed size and checksum verification after chunked Joomla update downloads
+* ✏️ Changed cache-directory selection when clearing Joomla caches
+* ✏️ The connector now requires Super User permissions for all its features [#31]
+* 🐞 Core updates downloaded in several requests produced a package one byte short, failing extraction [#32]
+* 🐞 Chunked core update downloads reported no file to download with some HTTP/1.1 update servers
 
 Legend:
 * 🚨 Security update

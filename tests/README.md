@@ -49,6 +49,8 @@ A major with no stable release yet (e.g. Joomla 6 before GA) is **skipped with a
 - `PANOPTICON_BASE_URL` — the API root (default `http://web/api/index.php`).
 - `PANOPTICON_API_TOKEN` — the Bearer token for the test Super User.
 
+Only Super Users may use the connector. `SuperUserOnlyRoutesTest` takes the list of routes from the webservices plugin itself, so every new route is covered automatically: it must refuse anonymous requests, an Administrator who holds every privilege short of Super User, and a user who can only log into the API. `SiteFixtures` creates those users.
+
 ### Layout
 
 ```
@@ -62,5 +64,5 @@ tests/
     ├── inbox/            # cached Joomla packages (git-ignored)
     └── src/
         ├── AbstractApiTestCase.php
-        └── Tests/        # SmokeTest, AuthorizationTest, ExtensionsTest, UpdatesTest, BackupTest
+        └── Tests/        # SmokeTest, AuthorizationTest, SuperUserOnlyRoutesTest, ExtensionsTest, …
 ```

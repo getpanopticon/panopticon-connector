@@ -1,8 +1,9 @@
 # Akeeba Panopticon Connector for Joomla 4.x, 5.x, and 6.x version 1.2.1
 
 * ✨ Component permissions: Super Users can now hide the connector from other user groups
-- Removed size and checksum verification after chunked Joomla update downloads
-~ Changed cache-directory selection when clearing Joomla caches
+* ✂️ Removed size and checksum verification after chunked Joomla update downloads
+* ✏️ Changed cache-directory selection when clearing Joomla caches
+* ✏️ The connector now requires Super User permissions for all its features [#31]
 * 🐞 Core updates downloaded in several requests produced a package one byte short, failing extraction [#32]
 * 🐞 Chunked core update downloads reported no file to download with some HTTP/1.1 update servers
 

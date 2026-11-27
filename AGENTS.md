@@ -37,7 +37,7 @@ No linter or CI pipeline is configured.
 
 ### API Route Pattern
 
-All routes are prefixed with `v1/panopticon/` and map to controller actions. The route → controller mapping is entirely defined in the WebServices plugin. Controllers handle authorization via Super User checks and return JSON:API formatted responses.
+All routes are prefixed with `v1/panopticon/` and map to controller actions. The route → controller mapping is entirely defined in the WebServices plugin. Controllers return JSON:API formatted responses.
 
 ### Key Integration Points
 
@@ -51,7 +51,7 @@ These integrations are detected at runtime; the connector works without them.
 
 - **File header:** Every PHP file starts with the standard `@package panopticon` / copyright / license block, followed by `defined('_JEXEC') || die;`
 - **Indentation:** Tabs, not spaces
-- **Authorization:** Controllers check for Super User access; unauthorized requests throw `NotAllowed` exceptions
+- **Authorization:** Every API request requires a Super User; so does seeing or printing a connection token (backend page, CLI). The API check lives in `component/api/src/Dispatcher/Dispatcher.php` and nowhere else: don't add other privilege checks (`core.manage`, `core.api`, per-component ones) to controllers, and don't declare `core.api`. Routes must go through `com_panopticon` and must not be `public`.
 - **Version tokens:** Build templates use `##VERSION##` and `##DATE##` placeholders replaced by Phing
 
 ## Versioning

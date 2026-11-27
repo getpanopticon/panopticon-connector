@@ -18,6 +18,14 @@ use Joomla\CMS\Layout\LayoutHelper;
 	</div>
 
 <?php
+// Everything else is about connecting the site, which only a Super User can do.
+if (!$this->isSuperUser)
+{
+	echo $this->loadTemplate('superuser');
+
+	return;
+}
+
 echo $this->loadTemplate('plgauth');
 echo $this->loadTemplate('plgusertoken');
 echo $this->loadTemplate('hastoken');

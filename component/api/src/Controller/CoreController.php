@@ -12,7 +12,6 @@ defined('_JEXEC') || die;
 use Akeeba\Component\Panopticon\Api\Mixin\HttpResponseCompatibilityTrait;
 use Akeeba\Component\Panopticon\Api\Mixin\J6FixBrokenModelStateTrait;
 use Akeeba\Component\Panopticon\Api\Model\CoreModel;
-use Joomla\CMS\Access\Exception\NotAllowed;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Log\Log;
@@ -60,11 +59,6 @@ class CoreController extends ApiController
 
 	public function applyUpdateSite()
 	{
-		if (!$this->app->getIdentity()->authorise('core.manage', 'com_joomlaupdate'))
-		{
-			throw new NotAllowed($this->app->getLanguage()->_('JERROR_ALERTNOAUTHOR'), 403);
-		}
-
 		/** @var CoreModel $model */
 		$model = $this->getModel();
 
@@ -104,11 +98,6 @@ class CoreController extends ApiController
 
 	public function downloadUpdate()
 	{
-		if (!$this->app->getIdentity()->authorise('core.manage', 'com_joomlaupdate'))
-		{
-			throw new NotAllowed($this->app->getLanguage()->_('JERROR_ALERTNOAUTHOR'), 403);
-		}
-
 		/** @var CoreModel $model */
 		$model = $this->getModel();
 
@@ -126,11 +115,6 @@ class CoreController extends ApiController
 
 	public function downloadUpdateChunked()
 	{
-		if (!$this->app->getIdentity()->authorise('core.manage', 'com_joomlaupdate'))
-		{
-			throw new NotAllowed($this->app->getLanguage()->_('JERROR_ALERTNOAUTHOR'), 403);
-		}
-
 		// Get potential POST parameters, used to resume the chunk download
 		$url         = $this->input->post->get('url', null, 'raw');
 		$size        = (int) $this->input->post->get('size', -1, 'int') ?: -1;
@@ -170,11 +154,6 @@ class CoreController extends ApiController
 
 	public function activateExtract()
 	{
-		if (!$this->app->getIdentity()->authorise('core.manage', 'com_joomlaupdate'))
-		{
-			throw new NotAllowed($this->app->getLanguage()->_('JERROR_ALERTNOAUTHOR'), 403);
-		}
-
 		$basename = $this->input->getRaw('basename', null);
 
 		/** @var CoreModel $model */
@@ -210,11 +189,6 @@ class CoreController extends ApiController
 
 	public function disableExtract()
 	{
-		if (!$this->app->getIdentity()->authorise('core.manage', 'com_joomlaupdate'))
-		{
-			throw new NotAllowed($this->app->getLanguage()->_('JERROR_ALERTNOAUTHOR'), 403);
-		}
-
 		/** @var CoreModel $model */
 		$model = $this->getModel();
 
@@ -225,11 +199,6 @@ class CoreController extends ApiController
 
 	public function postUpdate()
 	{
-		if (!$this->app->getIdentity()->authorise('core.manage', 'com_joomlaupdate'))
-		{
-			throw new NotAllowed($this->app->getLanguage()->_('JERROR_ALERTNOAUTHOR'), 403);
-		}
-
 		$options['format']    = '{DATE}\t{TIME}\t{LEVEL}\t{CODE}\t{MESSAGE}';
 		$options['text_file'] = 'joomla_update.php';
 		Log::addLogger($options, Log::INFO, ['Update', 'databasequery', 'jerror']);
@@ -272,11 +241,6 @@ class CoreController extends ApiController
 
 	public function prepareChecksum()
 	{
-		if (!$this->app->getIdentity()->authorise('core.manage', 'com_joomlaupdate'))
-		{
-			throw new NotAllowed($this->app->getLanguage()->_('JERROR_ALERTNOAUTHOR'), 403);
-		}
-
 		$version = JVERSION;
 
 		$base = trim((string) $this->input->get('checksumsBaseUrl', '', 'raw'));
@@ -354,11 +318,6 @@ class CoreController extends ApiController
 
 	public function stepChecksum()
 	{
-		if (!$this->app->getIdentity()->authorise('core.manage', 'com_joomlaupdate'))
-		{
-			throw new NotAllowed($this->app->getLanguage()->_('JERROR_ALERTNOAUTHOR'), 403);
-		}
-
 		$step = $this->input->getInt('step', 0);
 		$db   = Factory::getDbo();
 

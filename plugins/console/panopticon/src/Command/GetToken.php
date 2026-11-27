@@ -54,7 +54,7 @@ class GetToken extends AbstractCommand implements DatabaseAwareInterface
 	{
 		$this->configureSymfonyIO($input, $output);
 
-		// Get the user and make sure it's a Super User
+		// Get the user; they must be a Super User
 		$username = $this->cliInput->getOption('username');
 		$reset    = $this->cliInput->getOption('reset');
 
@@ -70,6 +70,14 @@ class GetToken extends AbstractCommand implements DatabaseAwareInterface
 			$this->ioStyle->error(Text::_('PLG_CONSOLE_PANOPTICON_GETTOKEN_ERR_NO_SUCH_USER'));
 
 			return 1;
+		}
+
+		// Akeeba Panopticon only works with a Super User. Check before changing anything on the site or the account.
+		if (!$user->authorise('core.admin'))
+		{
+			$this->ioStyle->error(Text::sprintf('PLG_CONSOLE_PANOPTICON_GETTOKEN_ERR_NOT_SUPER_USER', $username));
+
+			return 3;
 		}
 
 		// Make sure the necessary plugins are enabled

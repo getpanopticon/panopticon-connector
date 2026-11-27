@@ -12,7 +12,6 @@ defined('_JEXEC') || die;
 use Akeeba\Component\Panopticon\Api\Mixin\HttpResponseCompatibilityTrait;
 use Akeeba\Component\Panopticon\Api\Mixin\J6FixBrokenModelStateTrait;
 use Akeeba\Component\Panopticon\Api\Model\ExtensionsModel;
-use Joomla\CMS\Access\Exception\NotAllowed;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Factory;
 use Joomla\Filesystem\File;
@@ -89,11 +88,6 @@ class ExtensionsController extends ApiController
 
 	public function install(): void
 	{
-		if (!$this->app->getIdentity()->authorise('core.manage', 'com_installer'))
-		{
-			throw new NotAllowed($this->app->getLanguage()->_('JERROR_ALERTNOAUTHOR'), 403);
-		}
-
 		$params = ComponentHelper::getComponent('com_panopticon')->getParams();
 
 		if (!$params->get('allow_remote_install', 1))

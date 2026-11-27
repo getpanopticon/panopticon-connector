@@ -64,6 +64,13 @@ class HtmlView extends BaseHtmlView
 	protected $isAllowedUser = false;
 
 	/**
+	 * Is the current user a Super User? Only Super Users may connect the site to Panopticon.
+	 *
+	 * @var   bool
+	 */
+	protected $isSuperUser = false;
+
+	/**
 	 * Has the user created an API token (and not disabled the API token for their account)?
 	 *
 	 * @var   bool
@@ -78,6 +85,7 @@ class HtmlView extends BaseHtmlView
 			'plug'
 		);
 
+		$this->isSuperUser                         = (bool) Factory::getApplication()->getIdentity()->authorise('core.admin');
 		$this->isWebServicesPluginEnabled          = PluginHelper::isEnabled('webservices', 'panopticon');
 		$this->isWebServicesInstallerPluginEnabled = PluginHelper::isEnabled('webservices', 'installer');
 		$this->isTokenAuthPluginEnabled            = PluginHelper::isEnabled('api-authentication', 'token');
@@ -92,7 +100,8 @@ class HtmlView extends BaseHtmlView
 	{
 		$user = $user ?? Factory::getApplication()->getIdentity();
 
-		if (empty($user) || $user->guest)
+		// Never hand out the token of anyone but a Super User; the API refuses everybody else.
+		if (empty($user) || $user->guest || !$user->authorise('core.admin'))
 		{
 			return '';
 		}

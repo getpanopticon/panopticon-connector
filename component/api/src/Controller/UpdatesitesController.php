@@ -116,16 +116,10 @@ class UpdatesitesController extends ApiController
 			throw new ResourceNotFound();
 		}
 
-		$key  = $table->getKeyName();
 		$data = $this->input->get('data', json_decode($this->input->json->getRaw(), true), 'array');
 
-		foreach (array_keys($data) as $key)
-		{
-			if (!in_array($key, ['enabled', 'extra_query']))
-			{
-				unset ($data['key']);
-			}
-		}
+		// Only these fields may be changed through the API. Anything else, e.g. the update site's URL, is discarded.
+		$data = array_intersect_key((array) $data, array_flip(['enabled', 'extra_query']));
 
 		$item = $model->getItem($recordKey);
 		$data = array_merge((array) $item, $data);
@@ -157,23 +151,6 @@ class UpdatesitesController extends ApiController
 		}
 
 		return $recordKey;
-	}
-
-	/**
-	 * Method to check if you can edit an existing record.
-	 *
-	 * Extended classes can override this if necessary.
-	 *
-	 * @param   array   $data  An array of input data.
-	 * @param   string  $key   The name of the key for the primary key; default is id.
-	 *
-	 * @return  boolean
-	 *
-	 * @since   4.0.0
-	 */
-	protected function allowEdit($data = [], $key = 'id')
-	{
-		return $this->app->getIdentity()->authorise('core.edit', 'com_installer');
 	}
 
 	/**

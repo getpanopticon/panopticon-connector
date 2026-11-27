@@ -7,16 +7,12 @@
 
 defined('_JEXEC') || die;
 
-use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 
 /** @var \Akeeba\Component\Panopticon\Administrator\View\Welcome\HtmlView $this */
 
-$user = Factory::getApplication()->getIdentity();
-
 if (
-	(!$this->isAllowedUser && !$user->authorise('core.manage'))
-	|| !$this->isTokenAuthPluginEnabled
+	!$this->isTokenAuthPluginEnabled
 	|| !$this->isWebServicesPluginEnabled
 	|| !$this->isUserTokenPluginEnabled
 	|| !$this->hasToken

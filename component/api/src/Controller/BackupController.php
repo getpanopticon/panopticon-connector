@@ -11,7 +11,6 @@ defined('_JEXEC') || die;
 
 use Akeeba\Component\Panopticon\Api\Mixin\J6FixBrokenModelStateTrait;
 use Akeeba\Component\Panopticon\Api\Model\BackupModel;
-use Joomla\CMS\Access\Exception\NotAllowed;
 use Joomla\CMS\MVC\Controller\ApiController;
 use Joomla\CMS\Serializer\JoomlaSerializer;
 use Joomla\CMS\Uri\Uri;
@@ -43,11 +42,6 @@ class BackupController extends ApiController
 
 	public function version()
 	{
-		if (!$this->app->getIdentity()->authorise('core.manage', 'com_installer'))
-		{
-			throw new NotAllowed($this->app->getLanguage()->_('JERROR_ALERTNOAUTHOR'), 403);
-		}
-
 		/** @var BackupModel $model */
 		$model = $this->getModel();
 

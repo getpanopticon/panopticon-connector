@@ -73,8 +73,6 @@ class AdmintoolsController extends ApiController
 
 	public function plugin_disable()
 	{
-		$this->assertSuperUser();
-
 		$model = $this->getAdminToolsMVCFactory()->createModel('Controlpanel', 'Administrator');
 		$ret   = (object) [
 			'id'      => 0,
@@ -107,8 +105,6 @@ class AdmintoolsController extends ApiController
 
 	public function plugin_enable()
 	{
-		$this->assertSuperUser();
-
 		$model = $this->getAdminToolsMVCFactory()->createModel('Controlpanel', 'Administrator');
 		$ret   = (object) [
 			'id'      => 0,
@@ -134,8 +130,6 @@ class AdmintoolsController extends ApiController
 
 	public function htaccess_disable()
 	{
-		$this->assertSuperUser();
-
 		$ret = (object) [
 			'id'      => 0,
 			'exists'  => false,
@@ -171,8 +165,6 @@ class AdmintoolsController extends ApiController
 
 	public function htaccess_enable()
 	{
-		$this->assertSuperUser();
-
 		$ret = (object) [
 			'id'       => 0,
 			'exists'   => false,
@@ -208,8 +200,6 @@ class AdmintoolsController extends ApiController
 
 	public function tempsuperuser()
 	{
-		$this->assertSuperUser();
-
 		$expiration = $this->input->post->getString('expiration', '');
 		$now        = new Date();
 
@@ -261,8 +251,6 @@ class AdmintoolsController extends ApiController
 
 	public function scanner_start()
 	{
-		$this->assertCanManage();
-
 		$model = $this->getAdminToolsMVCFactory()->createModel('Scans', 'Administrator');
 
 		$result          = (object) $model->startScan('api');
@@ -274,9 +262,6 @@ class AdmintoolsController extends ApiController
 
 	public function scanner_step()
 	{
-		// Make sure we can proceed
-		$this->assertCanManage();
-
 		// Get the session data of the PHP File Change Scanner
 		$sessionData = $this->input->post->getRaw('session');
 
@@ -471,25 +456,5 @@ class AdmintoolsController extends ApiController
 		);
 
 		return $this->superUserGroups;
-	}
-
-	private function assertSuperUser(): void
-	{
-		$user = $this->app->getIdentity();
-
-		if (empty($user) || !($user->authorise('core.admin')))
-		{
-			throw new RuntimeException('JERROR_ALERTNOAUTHOR');
-		}
-	}
-
-	private function assertCanManage(): void
-	{
-		$user = $this->app->getIdentity();
-
-		if (empty($user) || !($user->authorise('core.manage', 'com_admintools')))
-		{
-			throw new RuntimeException('JERROR_ALERTNOAUTHOR');
-		}
 	}
 }
