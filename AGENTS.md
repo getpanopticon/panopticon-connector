@@ -17,7 +17,7 @@ Builds use **Apache Phing** and **require the sibling `../buildfiles` repo** to 
 Two PHPUnit suites — see `tests/README.md` for the full picture:
 
 - **Unit** (`phpunit -c phpunit.xml`) — pure logic; no Joomla, no database, no network.
-- **Integration** (`tests/integration/run-tests.sh [4|5|6]`) — drives the real REST API over HTTP against a Dockerised Joomla install. Needs Docker and the sibling `../buildfiles` repo.
+- **Integration** (`tests/integration/run-tests.sh [4|5|6]`) — drives the real REST API over HTTP against a Dockerised Joomla install. Needs the sibling `../buildfiles` repo. It also runs the unit suite in the test container. The whole run happens on the remote E2E host, falling back to the local Docker only when that host is unavailable: don't force `--host=local` to avoid it.
 
 PHPUnit is deliberately **not** in `composer.json`: `vendor-dir` points at the shipped `component/backend/vendor`, so a `require-dev` would leak PHPUnit into the release package. Use a PHPUnit 10/11 on your `PATH` or a `phpunit-11.phar`.
 

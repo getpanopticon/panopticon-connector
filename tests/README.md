@@ -42,6 +42,17 @@ tests/integration/run-tests.sh 4 5 --keep # keep the stack up afterwards
 
 A major with no stable release yet (e.g. Joomla 6 before GA) is **skipped with a loud log line**, not silently dropped.
 
+### Where it runs
+
+The harness uses the shared remote runner of `../buildfiles` (see "Remote E2E hosts" in its `README.md`). When a remote
+E2E host is configured (`e2e.docker.host` in the Phing properties files), the **whole** run happens there, and your
+working tree, including uncommitted changes, is copied to it. If that host cannot be reached over SSH, or its Docker
+daemon is not usable, the run happens on this machine instead, with a warning. `--host=local` forces a local run;
+`--host=HOST` forces that host, without fallback.
+
+Each integration run also runs the unit suite inside the test container, on that run's PHP version (unless you pass
+PHPUnit arguments, which select integration tests only). Take a stack kept with `--keep` down with `--down`.
+
 ### Configuration
 
 `tests/integration/docker/env.dist` is the template; `run-tests.sh` copies it to `.env` (git-ignored) on first run. Override `PHP_VERSION`, `DB_IMAGE`, `WEB_PORT`, DB credentials there. The tests read two environment variables, injected automatically by the orchestrator:

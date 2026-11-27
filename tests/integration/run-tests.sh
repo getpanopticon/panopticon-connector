@@ -4,15 +4,22 @@
 #
 # Provisions a throwaway Joomla site (major 4, 5 and/or 6) inside Docker,
 # builds and installs the connector package, mints a Joomla API token and
-# runs the PHPUnit integration suite (phpunit-integration.xml) against it
-# over real HTTP.
+# runs the unit suite (phpunit.xml) and the PHPUnit integration suite
+# (phpunit-integration.xml), the latter against the site over real HTTP.
+#
+# The whole run happens on the remote E2E host when one is configured, and on
+# this machine when it cannot be used. See "Remote E2E hosts" in
+# ../../../buildfiles/README.md.
 #
 # Usage:
 #   tests/integration/run-tests.sh                 # every Joomla:PHP pair in JOOMLA_MATRIX
 #   tests/integration/run-tests.sh 5.4              # only Joomla 5.4 (with the PHP paired to it)
 #   tests/integration/run-tests.sh 5.4 6            # Joomla 5.4 and 6
 #   tests/integration/run-tests.sh 5.4 --keep       # leave the stack running
-#   tests/integration/run-tests.sh 5.4 -- --filter=SmokeTest
+#   tests/integration/run-tests.sh 5.4 -- --filter=SmokeTest  (integration suite only)
+#   tests/integration/run-tests.sh --down           # take down a stack left up by --keep
+#   tests/integration/run-tests.sh --host=local     # run on this machine, or --host=HOST
+#   tests/integration/run-tests.sh --down --slot=N  # which stack, on a remote host
 #
 # JOOMLA_MATRIX is committed, not configured: see ../../../buildfiles/docker/e2e/matrix. Arguments
 # before a bare `--` that look like a Joomla version (5.4, 6, ...) select which of its entries to run;
@@ -30,6 +37,25 @@ RELEASE_DIR="${REPO_ROOT}/release"
 
 # shellcheck source=./lib.sh
 . "${SCRIPT_DIR}/lib.sh"
+
+# ---------------------------------------------------------------------------
+# Local or remote host. In remote mode everything below runs on that host instead, and e2e_remote exits with its status.
+# This comes before anything which needs Docker or sets a trap, and before the script changes its arguments.
+# ---------------------------------------------------------------------------
+E2E_REMOTE_SH="${REPO_ROOT}/../buildfiles/docker/e2e/remote.sh"
+# A nested linked worktree has no ../buildfiles of its own: use the one next to the main repository.
+[ -f "${E2E_REMOTE_SH}" ] || E2E_REMOTE_SH="$(dirname "$(git -C "${REPO_ROOT}" rev-parse --path-format=absolute --git-common-dir)")/../buildfiles/docker/e2e/remote.sh"
+[ -f "${E2E_REMOTE_SH}" ] || die "buildfiles not found. Check out akeeba/buildfiles next to this repository."
+# shellcheck source=/dev/null
+. "${E2E_REMOTE_SH}"
+
+E2E_HARNESS_DIR="${SCRIPT_DIR}"
+E2E_CONFIG_FILE="${DOCKER_DIR}/.env"
+E2E_COMPOSE_FILE="${DOCKER_DIR}/docker-compose.yml"
+E2E_PORTS=(WEB_PORT)
+E2E_KEEP_FLAGS=(--keep)
+
+e2e_remote "${BASH_SOURCE[0]}" "$@"
 
 # ---------------------------------------------------------------------------
 # docker compose wrapper (supports both `docker compose` and `docker-compose`)
@@ -50,6 +76,7 @@ cd "${DOCKER_DIR}"
 # ---------------------------------------------------------------------------
 MAJORS=()
 KEEP=0
+DOWN=0
 PHPUNIT_ARGS=()
 
 while [ $# -gt 0 ]; do
@@ -57,6 +84,17 @@ while [ $# -gt 0 ]; do
 		--keep)
 			KEEP=1
 			shift
+			;;
+		--down)
+			DOWN=1
+			shift
+			;;
+		# Read by e2e_remote above.
+		--host=*|--slot=*)
+			shift
+			;;
+		--host|--slot)
+			shift 2
 			;;
 		--)
 			shift
@@ -89,6 +127,9 @@ set -a
 . "${E2E_MATRIX}"
 if [ -f ./matrix.env ]; then . ./matrix.env; fi
 set +a
+
+# On a remote E2E host: this run's own port, whatever .env says.
+e2e_apply_overrides
 
 # Resolve what to run into MAJORS, a list of `joomla:php` pairs.
 if [ "${#MAJORS[@]}" -eq 0 ]; then
@@ -220,6 +261,11 @@ provision_token() {
 # ---------------------------------------------------------------------------
 # PHPUnit
 # ---------------------------------------------------------------------------
+run_unit_tests() {
+	log "Running the unit test suite (PHP ${PHP_VERSION})"
+	DC exec -T web phpunit -c /app/phpunit.xml
+}
+
 run_phpunit() {
 	log "Running the integration test suite (Joomla ${JOOMLA_RESOLVED})"
 
@@ -239,6 +285,11 @@ run_phpunit() {
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
+if [ "${DOWN}" -eq 1 ]; then
+	teardown_stack
+	exit 0
+fi
+
 log "Panopticon Connector integration harness — Joomla:PHP pairs: ${MAJORS[*]}"
 
 OVERALL_STATUS=0
@@ -277,6 +328,12 @@ for pair in "${MAJORS[@]}"; do
 	DC exec -T web chmod -R a+rwX /var/www/html
 
 	MAJOR_STATUS=0
+
+	# PHPUnit arguments (e.g. --filter) select integration tests. The unit suite needs the vendor/ the build installed.
+	if [ "${#PHPUNIT_ARGS[@]}" -eq 0 ]; then
+		run_unit_tests || MAJOR_STATUS=1
+	fi
+
 	run_phpunit || MAJOR_STATUS=1
 
 	if [ "${MAJOR_STATUS}" -ne 0 ]; then
@@ -291,7 +348,7 @@ for pair in "${MAJORS[@]}"; do
 done
 
 if [ "${KEEP}" -eq 1 ]; then
-	warn "Leaving the Docker stack up (--keep). Tear it down with: (cd ${DOCKER_DIR} && docker compose down -v)"
+	warn "Leaving the Docker stack up (--keep). Take it down with: tests/integration/run-tests.sh --down"
 else
 	teardown_stack
 fi
@@ -310,7 +367,5 @@ while [ "${i}" -lt "${#SUMMARY_MAJOR[@]}" ]; do
 	i=$((i + 1))
 done
 
-echo
-log "Run the (host-side) unit suite with: phpunit -c phpunit.xml"
 
 exit "${OVERALL_STATUS}"
