@@ -251,6 +251,11 @@ for pair in "${MAJORS[@]}"; do
 	export PHP_VERSION="${pair#*:}"
 	log "=== Joomla ${major} on PHP ${PHP_VERSION} ==="
 
+	# Empty the web root BEFORE the web server starts. bring_up_stack requests the site, which would make PHP's opcache
+	# hold a previous run's configuration.php. A fast enough run would then reach the tests before PHP looks at the new
+	# file, and valid API tokens would be refused because of the old site secret.
+	clean_www
+
 	# The web image's PHP version varies per entry, so (re)build and start the stack for each one.
 	bring_up_stack
 
@@ -262,7 +267,6 @@ for pair in "${MAJORS[@]}"; do
 		continue
 	fi
 
-	clean_www
 	extract_joomla
 	reset_database
 	install_joomla
