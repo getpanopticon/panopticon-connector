@@ -57,7 +57,16 @@
     Tasks - General
     ====================================================================================================
     -->
-    <target name="all" description="Makes everything" depends="git,update">
+    <target name="all" description="Makes everything" depends="git">
+    </target>
+
+    <!--
+    Overrides the target in common.xml. The update stream must only be published once the GitHub release it links to
+    is public: if that fails, sites must keep seeing the previous version instead of being offered a broken download.
+    -->
+    <target name="release" description="Publishes the GitHub release, then the update stream" depends="setup-properties">
+        <phingcall target="github-release" />
+        <phingcall target="update" />
     </target>
 
 
