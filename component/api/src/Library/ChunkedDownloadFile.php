@@ -16,7 +16,7 @@ use RuntimeException;
  *
  * Extracted from CoreModel so it can be tested without depending on the Joomla update model machinery.
  *
- * @since   1.2.0
+ * @since   1.2.1
  */
 class ChunkedDownloadFile
 {
@@ -29,7 +29,7 @@ class ChunkedDownloadFile
 	 *
 	 * @return  resource
 	 * @throws  RuntimeException
-	 * @since   1.2.0
+	 * @since   1.2.1
 	 */
 	public static function openForResume(string $path, int $offset)
 	{

@@ -57,6 +57,9 @@ class ChunkedDownloadFileTest extends TestCase
 			$offset += strlen($chunk);
 		}
 
+		// openForResume() leaves the size before the last chunk in PHP's stat cache, which PHP 8.1 then reports.
+		clearstatcache(true, $this->file);
+
 		$this->assertSame($size, filesize($this->file));
 		$this->assertSame(md5($source), md5_file($this->file));
 	}

@@ -56,6 +56,6 @@ These integrations are detected at runtime; the connector works without them.
 
 ## Versioning
 
-- Version, date, and API level are maintained in `component/backend/version.php`
+- `component/backend/version.php` holds the version, date, and API level. It is generated and Git-ignored: edit `build/templates/version.php`
 - The API level (`AKEEBA_PANOPTICON_API`) is an integer that tracks breaking API changes
 - Package manifests (`pkg_panopticon.xml`, `component/panopticon.xml`) also contain version strings updated at build time
