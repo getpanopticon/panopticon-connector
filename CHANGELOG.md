@@ -1,3 +1,6 @@
+# Akeeba Panopticon Connector for Joomla 4.x, 5.x, and 6.x version 1.2.2
+
+
 # Akeeba Panopticon Connector for Joomla 4.x, 5.x, and 6.x version 1.2.1
 
 * ✨ Component permissions: Super Users can now hide the connector from other user groups
